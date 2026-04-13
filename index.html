@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Reservasi Ruang</title>
+    <style>
+        /* TEMA MODERN LIGHT DASHBOARD */
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+        body {
+            background-color: #f4f7fe; /* Warna background abu-abu kebiruan yang soft */
+            color: #2b3674; /* Warna teks biru dongker */
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 30px 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard-wrapper {
+            width: 100%;
+            max-width: 900px; /* Lebih lebar karena dua kolom */
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 800;
+            font-size: 28px;
+            color: #4318ff; /* Warna aksen ungu modern */
+        }
+
+        /* GRID DUA KOLOM */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr; /* Kolom kanan sedikit lebih lebar */
+            gap: 25px;
+        }
+
+        /* Card Style Umum */
+        .card {
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e9edf7;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            margin-top: 0;
+            color: #2b3674;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Styling Form */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #f4f7fe;
+            color: #2b3674;
+            border: none;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input:focus, select:focus {
+            box-shadow: 0 0 0 2px #4318ff; /* Outline ungu saat diklik */
+        }
+
+        .time-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .label-mini {
+            font-size: 11px;
+            font-weight: 600;
+            color: #a3aed1;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        /* Styling Tombol Modern */
+        button {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        .btn-add { background-color: #4318ff; }
+        .btn-add:hover { background-color: #3311cc; }
+
+        .btn-process { background-color: #05cd99; }
+        .btn-process:hover { background-color: #04a97e; }
+
+        .btn-check { background-color: #ffce20; color: #705900; }
+        .btn-check:hover { background-color: #e0b419; }
+
+        .btn-reset { background-color: #ff5b5b; }
+        .btn-reset:hover { background-color: #d14949; }
+
+        /* Styling List Antrean & Riwayat */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-item {
+            background-color: #f4f7fe;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .list-item.done {
+            background-color: #e6f9f4; /* Hijau super tipis untuk riwayat */
+            border-left: 5px solid #05cd99;
+        }
+
+        .list-item.waiting {
+            border-left: 5px solid #4318ff;
+        }
+
+        .item-header {
+            font-weight: 800;
+            font-size: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .badge-ruang {
+            background-color: #e9edf7;
+            color: #4318ff;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .item-detail {
+            font-size: 12px;
+            color: #8f9bba;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #a3aed1;
+            font-size: 14px;
+            padding: 20px 0;
+            font-style: italic;
+        }
+
+        /* Responsif untuk HP: Berubah jadi 1 kolom bertumpuk */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-wrapper">
+    <div class="header-title">✨ e-Room Reservation</div>
+    
+    <div class="grid-container">
+        
+        <div class="left-column">
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 class="card-title">📝 Form Peminjaman</h3>
+                
+                <div class="form-group">
+                    <input type="text" id="namaKelompok" placeholder="Nama Tim / Kelompok" required>
+                    <input type="text" id="penanggungJawab" placeholder="Nama Penanggung Jawab" required>
+                    
+                    <select id="ruang">
+                        <option value="" disabled selected>-- Pilih Ruangan --</option>
+                        <option value="Ruang Kolaborasi 1">Ruang Kolaborasi 1</option>
+                        <option value="Ruang Kolaborasi 2">Ruang Kolaborasi 2</option>
+                        <option value="Studio Presentasi">Studio Presentasi</option>
+                    </select>
+                    
+                    <div class="time-group">
+                        <div>
+                            <span class="label-mini">MULAI</span>
+                            <input type="datetime-local" id="waktuMulai" required>
+                        </div>
+                        <div>
+                            <span class="label-mini">SELESAI</span>
+                            <input type="datetime-local" id="waktuSelesai" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn-add" onclick="tambahAntrean()">Tambahkan ke Antrean</button>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">⚙️ Kontrol Admin</h3>
+                <button class="btn-process" onclick="prosesData()">Setujui Antrean Berikutnya</button>
+                <button class="btn-check" onclick="cekTerakhir()">Cek Peminjaman Terakhir</button>
+                <button class="btn-reset" onclick="resetRiwayat()">Kosongkan Riwayat</button>
+            </div>
+        </div>
+
+        <div class="right-column">
+            
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 class="card-title">⏳ Daftar Tunggu (Queue)</h3>
+                <div id="antreanContainer" class="list-container">
+                    <div class="empty-state">Belum ada kelompok di daftar tunggu.</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">✅ Riwayat Disetujui (Stack)</h3>
+                <div id="riwayatContainer" class="list-container">
+                    <div class="empty-state">Riwayat peminjaman masih kosong.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- LOGIKA JAVASCRIPT (SAMA PERSIS FUNGSINYA, HANYA BEDA NAMA VARIABLE AGAR LEBIH FRESH) ---
+    
+    // Queue (FIFO)
+    class QueueRoom {
+        constructor() { this.items = []; }
+        enqueue(element) { this.items.push(element); }
+        dequeue() { return this.items.shift(); }
+        isEmpty() { return this.items.length === 0; }
+        getAll() { return this.items; }
+    }
+
+    // Stack (LIFO)
+    class StackRoom {
+        constructor() { this.items = []; }
+        push(element) { this.items.push(element); }
+        pop() { return this.items.pop(); }
+        peek() { return this.items[this.items.length - 1]; }
+        isEmpty() { return this.items.length === 0; }
+        getAll() { return [...this.items].reverse(); } // Dibalik agar terbaru di atas
+        clear() { this.items = []; }
+    }
+
+    const antreanQ = new QueueRoom();
+    const riwayatS = new StackRoom();
+
+    function formatTanggal(datetimeLocalStr) {
+        if (!datetimeLocalStr) return "-";
+        const date = new Date(datetimeLocalStr);
+        return date.toLocaleString('id-ID', { 
+            day: '2-digit', month: 'short', 
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    function tambahAntrean() {
+        const kelompok = document.getElementById('namaKelompok').value;
+        const pj = document.getElementById('penanggungJawab').value;
+        const ruang = document.getElementById('ruang').value;
+        const mulai = document.getElementById('waktuMulai').value;
+        const selesai = document.getElementById('waktuSelesai').value;
+
+        if (!kelompok || !pj || !ruang || !mulai || !selesai) {
+            alert("Harap lengkapi semua form pendaftaran!");
+            return;
+        }
+
+        antreanQ.enqueue({ kelompok, pj, ruang, mulai, selesai });
+        
+        document.getElementById('namaKelompok').value = '';
+        document.getElementById('penanggungJawab').value = '';
+        document.getElementById('ruang').value = '';
+        
+        updateTampilan();
+    }
+
+    function prosesData() {
+        if (antreanQ.isEmpty()) {
+            alert("Yeay! Tidak ada antrean saat ini.");
+            return;
+        }
+        const diproses = antreanQ.dequeue();
+        riwayatS.push(diproses);
+        updateTampilan();
+    }
+
+    function cekTerakhir() {
+        if (riwayatS.isEmpty()) {
+            alert("Belum ada data peminjaman yang disetujui.");
+            return;
+        }
+        const terakhir = riwayatS.peek();
+        alert(`INFO PEMINJAMAN TERBARU:\n\nTim: ${terakhir.kelompok}\nPJ: ${terakhir.pj}\nRuangan: ${terakhir.ruang}\nJadwal: ${formatTanggal(terakhir.mulai)} - ${formatTanggal(terakhir.selesai)}`);
+    }
+
+    function resetRiwayat() {
+        if(confirm("Apakah kamu yakin ingin menghapus semua data riwayat?")) {
+            riwayatS.clear();
+            updateTampilan();
+        }
+    }
+
+    function updateTampilan() {
+        const divAntrean = document.getElementById('antreanContainer');
+        const divRiwayat = document.getElementById('riwayatContainer');
+
+        // Render Queue
+        if (antreanQ.isEmpty()) {
+            divAntrean.innerHTML = '<div class="empty-state">Belum ada kelompok di daftar tunggu.</div>';
+        } else {
+            divAntrean.innerHTML = antreanQ.getAll().map((item, index) => `
+                <div class="list-item waiting">
+                    <div class="item-header">
+                        <span>#${index + 1} - ${item.kelompok}</span>
+                        <span class="badge-ruang">${item.ruang}</span>
+                    </div>
+                    <div class="item-detail">👤 PJ: ${item.pj}</div>
+                    <div class="item-detail">🕒 ${formatTanggal(item.mulai)} s/d ${formatTanggal(item.selesai)}</div>
+                </div>
+            `).join('');
+        }
+
+        // Render Stack
+        if (riwayatS.isEmpty()) {
+            divRiwayat.innerHTML = '<div class="empty-state">Riwayat peminjaman masih kosong.</div>';
+        } else {
+            divRiwayat.innerHTML = riwayatS.getAll().map(item => `
+                <div class="list-item done">
+                    <div class="item-header">
+                        <span>✔️ ${item.kelompok}</span>
+                        <span class="badge-ruang">${item.ruang}</span>
+                    </div>
+                    <div class="item-detail">👤 PJ: ${item.pj}</div>
+                    <div class="item-detail">🕒 ${formatTanggal(item.mulai)} s/d ${formatTanggal(item.selesai)}</div>
+                </div>
+            `).join('');
+        }
+    }
+</script>
+
+</body>
+</html>
